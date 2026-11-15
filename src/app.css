@@ -1,0 +1,116 @@
+/*
+ * Theme tokens. `data-theme`, `--accent-base`, the grid's color and strength, and `--round` are
+ * set from settings (settings.svelte.ts). Colors lean towards the Everforest palette: soft,
+ * earthy versions of each hue. `data-theme-scope` ("dark" or "light") gives an element its own
+ * theme whatever the app's (exports render maps in either).
+ */
+:root,
+[data-theme-scope] {
+  --canvas-bg: #282c2f;
+  --text: #e2ddd1;
+  --text-muted: #969a91;
+  --accent-base: #80a8cc;
+  --accent: var(--accent-base);
+  --accent-wash: color-mix(in srgb, var(--accent) 14%, transparent);
+  /* Text and icons drawn on the accent: dark on the dark theme's soft accents, white on light. */
+  --on-accent: #1f2427;
+  --panel-bg: rgb(52 57 60 / 0.86);
+  --panel-border: rgb(255 255 255 / 0.07);
+  --panel-hover: rgb(255 255 255 / 0.07);
+  --panel-solid: #343a3d;
+  --panel-shadow: rgb(0 0 0 / 0.3);
+  --control-bg: rgb(255 255 255 / 0.06);
+  --handle-bg: #f4f0e6;
+  --node-placeholder: rgb(255 255 255 / 0.05);
+  --node-shadow: rgb(0 0 0 / 0.3);
+  --link: #8b9089;
+  --frame: #9b9f97;
+  --danger: #e67e80;
+
+  /* Named colors for links, frames and the grid: the same hues in both themes, deeper in light. */
+  --c-red: #e67e80;
+  --c-orange: #e69875;
+  --c-yellow: #dbbc7f;
+  --c-green: #83c092;
+  --c-blue: #80a8cc;
+  --c-purple: #a993d1;
+
+  /* Maps: lines in the theme's text color on the card color, so they follow the theme; terrain
+     marks in their own hues, lighter here to read on dark. */
+  --map-ink: var(--text);
+  --map-floor: var(--panel-solid);
+  --map-grid: color-mix(in srgb, var(--text) 13%, transparent);
+  --map-hatch: color-mix(in srgb, var(--text) 60%, transparent);
+  --map-red: #e8796f;
+  --map-water: #7fb1da;
+  --map-grass: #92c27b;
+  --map-dirt: #c9a77a;
+
+  /* The grid: a color mixed into the canvas (settings: grid color and strength). */
+  --grid-base: var(--text);
+  --grid-strength: 12%;
+  --grid-dot: color-mix(in oklab, var(--grid-base) var(--grid-strength), var(--canvas-bg));
+
+  /* Corner rounding: every radius is multiplied by it (settings: corners). */
+  --round: 1;
+
+  color-scheme: dark;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+:root[data-theme="light"],
+[data-theme-scope="light"] {
+  --canvas-bg: #f2f2ef;
+  --text: #24261f;
+  --text-muted: #6d7067;
+  --on-accent: #ffffff;
+  --panel-bg: rgb(255 255 255 / 0.85);
+  --panel-border: rgb(0 0 0 / 0.09);
+  --panel-hover: rgb(0 0 0 / 0.05);
+  --panel-solid: #fdfcf8;
+  --panel-shadow: rgb(0 0 0 / 0.14);
+  --control-bg: rgb(0 0 0 / 0.05);
+  --handle-bg: #ffffff;
+  --node-placeholder: rgb(0 0 0 / 0.05);
+  --node-shadow: rgb(0 0 0 / 0.16);
+  --link: #8d9088;
+  --frame: #7c8078;
+  --danger: #d0605f;
+
+  --map-red: #c8372d;
+  --map-water: #3d76a8;
+  --map-grass: #4d8a37;
+  --map-dirt: #8f6f45;
+
+  --c-red: #d0605f;
+  --c-orange: #d07a45;
+  --c-yellow: #b8901c;
+  --c-green: #3f9a63;
+  --c-blue: #3f7fb5;
+  --c-purple: #8463b8;
+
+  color-scheme: light;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--canvas-bg);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Find on the board: matched words (CSS Custom Highlight API, search.svelte.ts). A marker yellow
+   with dark text, so it reads on any card color; the current match in the accent. */
+::highlight(pw-find) {
+  background-color: rgb(250 214 90 / 0.75);
+  color: #1f2427;
+}
+::highlight(pw-find-current) {
+  background-color: var(--accent);
+  color: var(--on-accent);
+}
