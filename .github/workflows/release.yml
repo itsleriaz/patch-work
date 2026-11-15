@@ -56,6 +56,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       - uses: tauri-apps/tauri-action@v0
+        id: tauri
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -65,3 +66,20 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+
+      - name: Portable Windows zip
+        if: runner.os == 'Windows'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_ID: ${{ steps.tauri.outputs.releaseId }}
+        run: |
+          mkdir portable
+          cp src-tauri/target/release/patchwork.exe portable/Patchwork.exe
+          cp LICENSE portable/
+          7z a Patchwork-portable-windows.zip ./portable/*
+          curl --fail -sS -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Content-Type: application/zip" \
+            --data-binary @Patchwork-portable-windows.zip \
+            "https://uploads.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID/assets?name=Patchwork-portable-windows.zip"
