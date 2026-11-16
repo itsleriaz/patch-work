@@ -222,6 +222,13 @@
       rotate 180ms ease-out,
       box-shadow 200ms ease-out;
   }
+  /* While the camera moves, --inv-zoom steps (Canvas.svelte): a shadow drawn with it jumps instead
+     of easing, or every picture's shadow would be repainted on every frame of a zoom. */
+  :global(:where(.camera.moving)) .content {
+    transition:
+      scale 280ms cubic-bezier(0.34, 1.56, 0.64, 1),
+      rotate 180ms ease-out;
+  }
   /* Picked up: grows a little and leans with the drag. No transition on the position: one that
      restarts on every move (or every grid cell crossed) trails the pointer and stutters. */
   .lifted {

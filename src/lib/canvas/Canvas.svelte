@@ -11,6 +11,7 @@
   import { relinkMissing } from "../storage.svelte";
   import { backend } from "../backend";
   import { aabb, intersects, union } from "../doc/geometry";
+  import type { Rect } from "../doc/types";
   import { isPlayable, playing, togglePlaying } from "../media/playback.svelte";
   import { isSprite } from "../sprite/model";
   import { toggleSprite } from "../sprite/sprites.svelte";
@@ -37,11 +38,23 @@
   let viewport: HTMLDivElement;
 
   // Virtualization: only nodes near the viewport are in the DOM, so offscreen
-  // images release their decoded bitmaps.
-  const area = $derived.by(() => {
+  // images release their decoded bitmaps. The area reaches a quarter of the view past each edge,
+  // and is kept while the view stays well inside it, so a pan or a small zoom doesn't refilter the
+  // board (and diff the node list) every frame.
+  let kept: { rect: Rect; margin: number } | null = null;
+  const area = $derived.by((): Rect => {
     const v = camera.viewRect;
-    const m = Math.max(v.w, v.h) * 0.25;
-    return { x: v.x - m, y: v.y - m, w: v.w + 2 * m, h: v.h + 2 * m };
+    if (kept) {
+      const { rect: a, margin } = kept;
+      // At least half the margin left on every side, and not zoomed in past twice the scale it was
+      // made at (it would mount far more than is near the view).
+      const slack = margin / 2;
+      const inside = v.x >= a.x + slack && v.y >= a.y + slack && v.x + v.w <= a.x + a.w - slack && v.y + v.h <= a.y + a.h - slack;
+      if (inside && Math.max(v.w, v.h) >= margin * 2) return a;
+    }
+    const margin = Math.max(v.w, v.h) * 0.25;
+    kept = { rect: { x: v.x - margin, y: v.y - margin, w: v.w + 2 * margin, h: v.h + 2 * margin }, margin };
+    return kept.rect;
   });
   // The node being edited stays mounted so panning away doesn't drop the editor; playing media
   // stays mounted so it keeps playing.
@@ -52,6 +65,18 @@
       (n) => (!frames.hidden.has(n.id) || frameUi.tucking.has(n.id)) && (n.id === ui.editing?.id || playing.has(n.id) || intersects(area, aabb(n))),
     ),
   );
+  // `--inv-zoom` keeps outlines, shadows and badges a constant size on screen. Changing it restyles
+  // everything in the camera layer and repaints all that's drawn with it, which is most of a zoom
+  // frame's cost on slower machines. So while the camera moves it only follows the zoom in steps
+  // (INV_ZOOM_STEP: a 2px outline drawn up to 0.2px off, mid-gesture), and it's exact at rest.
+  const INV_ZOOM_STEP = Math.log(1.1);
+  let invZoomShown = 1;
+  const invZoom = $derived.by(() => {
+    const exact = 1 / camera.zoom;
+    if (!camera.moving || Math.abs(Math.log(exact / invZoomShown)) > INV_ZOOM_STEP) invZoomShown = exact;
+    return invZoomShown;
+  });
+
   // Frames fit their members (or stay a compact card when collapsed), on screen or not.
   $effect(() => syncFrames());
   // Links whose ends' bounds (plus room for the curve's bulge) reach the view.
@@ -151,9 +176,9 @@
   <Grid />
   <div
     class="camera"
-    class:moving={ix.cameraMoving || camera.gliding}
+    class:moving={camera.moving}
     style:transform="translate({camera.x}px, {camera.y}px) scale({camera.zoom})"
-    style:--inv-zoom={1 / camera.zoom}
+    style:--inv-zoom={invZoom}
     style:--tilt="{ix.tilt}deg"
   >
     <LinkLayer links={visibleLinks} {ix} />

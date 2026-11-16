@@ -61,6 +61,10 @@
     pointer-events: none;
     transition: stroke-width 120ms ease;
   }
+  /* The width follows --inv-zoom, which steps while the camera moves: no easing then. */
+  :global(:where(.camera.moving)) .line {
+    transition: none;
+  }
   .dashed .line {
     stroke-dasharray: calc(7px * var(--inv-zoom)) calc(6px * var(--inv-zoom));
   }

@@ -62,7 +62,7 @@
   function centerOn(p: Point, animate: boolean) {
     const target = { zoom: camera.zoom, x: camera.centerX - p.x * camera.zoom, y: camera.height / 2 - p.y * camera.zoom };
     if (animate && !settings.calm) camera.animateTo(target, 200);
-    else camera.set(target);
+    else camera.moveTo(target);
   }
 
   let grab: Point | null = null;

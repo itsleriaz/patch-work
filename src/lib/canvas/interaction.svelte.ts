@@ -136,8 +136,6 @@ export class Interaction {
   marquee = $state<Rect | null>(null);
   spaceHeld = $state(false);
   panning = $state(false);
-  /** True while the camera is moving; lets the camera layer use a cheap composited transform. */
-  cameraMoving = $state(false);
   /** Set while rotating a multi-selection, whose box would otherwise snap back to axis-aligned. */
   boxOverride = $state<Frame | null>(null);
   /** The active transform handle, for cursor feedback. */
@@ -178,8 +176,13 @@ export class Interaction {
   #below = false;
 
   #gesture: Gesture | null = null;
+  /**
+   * The viewport's top-left in client px, read once and kept until the window resizes. Reading it
+   * on every wheel tick or pointer move forced a style and layout pass whenever the camera had
+   * just moved.
+   */
   #origin = { left: 0, top: 0 };
-  #movingTimer = 0;
+  #originKnown = false;
   #pinchScale = 1;
   #lastMove = { x: 0, t: 0 };
   #tiltTimer = 0;
@@ -188,15 +191,15 @@ export class Interaction {
     return { x: e.clientX - this.#origin.left, y: e.clientY - this.#origin.top };
   }
 
-  #setOrigin(viewport: HTMLElement) {
-    const rect = viewport.getBoundingClientRect();
-    this.#origin = { left: rect.left, top: rect.top };
+  constructor() {
+    window.addEventListener("resize", () => (this.#originKnown = false));
   }
 
-  #markCameraMoving() {
-    this.cameraMoving = true;
-    clearTimeout(this.#movingTimer);
-    this.#movingTimer = window.setTimeout(() => (this.cameraMoving = false), 160);
+  #setOrigin(viewport: HTMLElement) {
+    if (this.#originKnown) return;
+    const rect = viewport.getBoundingClientRect();
+    this.#origin = { left: rect.left, top: rect.top };
+    this.#originKnown = true;
   }
 
   /** What a transform changes: the selection and what hangs from it (locked nodes stay). */
@@ -433,7 +436,6 @@ export class Interaction {
         g.lastY = p.y;
         g.trail.push({ ...p, t: e.timeStamp });
         if (g.trail.length > 12) g.trail.shift();
-        this.#markCameraMoving();
         break;
       case "drag":
         this.#drag(g, e);
@@ -474,9 +476,11 @@ export class Interaction {
   #hover(e: PointerEvent) {
     // Over a handle the current node keeps its handles.
     if ((e.target as Element).closest?.("[data-link-handle], [data-link-end]")) return;
-    const rect = (e.currentTarget as HTMLElement | null)?.getBoundingClientRect();
-    if (!rect) return;
-    const p = camera.toWorld(e.clientX - rect.left, e.clientY - rect.top);
+    const viewport = e.currentTarget as HTMLElement | null;
+    if (!viewport) return;
+    this.#setOrigin(viewport);
+    const q = this.#local(e);
+    const p = camera.toWorld(q.x, q.y);
     const margin = HOVER_MARGIN / camera.zoom;
     let best: { id: string; z: number } | null = null;
     for (const n of doc.nodeList) {
@@ -1006,7 +1010,6 @@ export class Interaction {
       if (e.shiftKey && dx === 0) [dx, dy] = [dy, 0];
       camera.panBy(-dx, -dy);
     }
-    this.#markCameraMoving();
   }
 
   /** Safari/WKWebView trackpad pinch. */
@@ -1021,6 +1024,5 @@ export class Interaction {
     const p = this.#local({ clientX: e.clientX ?? 0, clientY: e.clientY ?? 0 });
     camera.zoomAt(p.x, p.y, e.scale / this.#pinchScale);
     this.#pinchScale = e.scale;
-    this.#markCameraMoving();
   }
 }

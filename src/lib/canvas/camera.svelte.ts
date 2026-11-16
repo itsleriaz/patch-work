@@ -12,6 +12,8 @@ const PAN_STOP = 0.015;
 const PAN_MAX = 6;
 /** How quickly smooth zoom catches up with the wheel: the gap shrinks by 1/e every ZOOM_EASE ms. */
 const ZOOM_EASE = 55;
+/** How long after its last change the camera still counts as moving (wheel ticks come in bursts). */
+const SETTLE_MS = 160;
 const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2);
 
@@ -31,6 +33,13 @@ export class Camera {
   #anim = 0;
   /** True while the camera glides or eases on its own (momentum, smooth zoom). */
   gliding = $state(false);
+  /**
+   * True while the view is being moved by anything (pan, wheel, pinch, glide, animation) and for
+   * SETTLE_MS after. The canvas promotes its camera layer and holds back per-frame restyling
+   * meanwhile (Canvas.svelte). Jumps through `set` don't count.
+   */
+  moving = $state(false);
+  #settle = 0;
   /** Pan momentum: screen px per ms. */
   #vx = 0;
   #vy = 0;
@@ -44,6 +53,12 @@ export class Camera {
   #cancelAnim() {
     cancelAnimationFrame(this.#anim);
     if (this.#flying) this.#flying = this.gliding = false;
+  }
+
+  #moved() {
+    if (!this.moving) this.moving = true;
+    clearTimeout(this.#settle);
+    this.#settle = window.setTimeout(() => (this.moving = false), SETTLE_MS);
   }
 
   toWorld(sx: number, sy: number) {
@@ -66,6 +81,12 @@ export class Camera {
     this.zoom = state.zoom;
   }
 
+  /** Like `set`, for a move that's part of a gesture (dragging the minimap): it counts as moving. */
+  moveTo(state: CameraState) {
+    this.set(state);
+    this.#moved();
+  }
+
   get state(): CameraState {
     return { x: this.x, y: this.y, zoom: this.zoom };
   }
@@ -76,6 +97,7 @@ export class Camera {
     this.#vx = this.#vy = 0;
     this.x += dx;
     this.y += dy;
+    this.#moved();
   }
 
   /** Zooms keeping the screen point (sx, sy) fixed. */
@@ -87,6 +109,7 @@ export class Camera {
     this.x = sx - (sx - this.x) * k;
     this.y = sy - (sy - this.y) * k;
     this.zoom = zoom;
+    this.#moved();
   }
 
   /** Smoothly frames a world rectangle. */
@@ -156,6 +179,7 @@ export class Camera {
         this.zoom = zoom;
         if (done) this.#goal = null;
       }
+      this.#moved();
       if (this.#vx || this.#vy || this.#goal) this.#glide = requestAnimationFrame(step);
       else this.gliding = false;
     };
@@ -182,6 +206,7 @@ export class Camera {
       this.zoom = zoom;
       this.x = cx - wx * zoom;
       this.y = cy - wy * zoom;
+      this.#moved();
       if (t < 1) this.#anim = requestAnimationFrame(step);
     };
     this.#anim = requestAnimationFrame(step);
@@ -223,6 +248,7 @@ export class Camera {
       this.zoom = zoom;
       this.x = cx - (c0.x + (c1.x - c0.x) * u) * zoom;
       this.y = cy - (c0.y + (c1.y - c0.y) * u) * zoom;
+      this.#moved();
       if (t < 1) this.#anim = requestAnimationFrame(step);
       else {
         this.#flying = false;
