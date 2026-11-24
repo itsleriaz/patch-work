@@ -146,7 +146,7 @@
   .collapsed {
     background: color-mix(in srgb, var(--fc) 14%, var(--panel-solid));
     border-color: color-mix(in srgb, var(--fc) 55%, transparent);
-    box-shadow: 0 calc(3px * var(--inv-zoom)) calc(14px * var(--inv-zoom)) var(--node-shadow);
+    box-shadow: 0 calc(3px * var(--shadow-zoom)) calc(14px * var(--shadow-zoom)) var(--node-shadow);
   }
   .collapsed .bar {
     height: 100%;

@@ -322,7 +322,7 @@
     background: var(--panel-solid);
     color: var(--text);
     line-height: 1.35;
-    box-shadow: 0 calc(3px * var(--inv-zoom)) calc(14px * var(--inv-zoom)) var(--node-shadow);
+    box-shadow: 0 calc(3px * var(--shadow-zoom)) calc(14px * var(--shadow-zoom)) var(--node-shadow);
   }
   /* Cells draw their right and bottom borders; the grid draws the top and left ones. */
   .grid {

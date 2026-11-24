@@ -269,11 +269,11 @@
     rotate: calc(var(--tilt, 0deg) * var(--lean, 1));
   }
   .lifted .content.media {
-    box-shadow: 0 calc(14px * var(--inv-zoom)) calc(36px * var(--inv-zoom)) var(--node-shadow);
+    box-shadow: 0 calc(14px * var(--shadow-zoom)) calc(36px * var(--shadow-zoom)) var(--node-shadow);
   }
   .content.media {
     border-radius: 0;
-    box-shadow: 0 calc(4px * var(--inv-zoom)) calc(18px * var(--inv-zoom)) var(--node-shadow);
+    box-shadow: 0 calc(4px * var(--shadow-zoom)) calc(18px * var(--shadow-zoom)) var(--node-shadow);
   }
   .flip {
     width: 100%;

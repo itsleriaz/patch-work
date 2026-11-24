@@ -261,6 +261,10 @@
     left: 0;
     top: 0;
     transform-origin: 0 0;
+    /* Node shadows keep a constant screen size down to 33% zoom, then shrink with the board. A blur
+       that grows with 1/zoom gets wider than the node itself when zoomed far out, and repainting it
+       was most of a zoom frame's cost there (a 40-image board at 5%: 100 ms frames, 37 without). */
+    --shadow-zoom: min(var(--inv-zoom), 3);
   }
   /* Promote to a GPU layer only while moving: panning becomes pure compositing,
      and contents re-rasterize sharply once the camera settles. */

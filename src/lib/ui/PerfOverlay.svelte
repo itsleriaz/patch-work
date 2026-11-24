@@ -36,9 +36,12 @@
     ctx.scale(dpr, dpr);
     const frames = meter.durations.slice(-BARS);
     const bw = W / BARS;
+    // The display's frame interval (the median frame): rAF timing jitters by a ms or so around it,
+    // so a frame is late (yellow) only once it missed a vsync, i.e. took half an interval longer.
+    const vsync = [...frames].sort((a, b) => a - b)[frames.length >> 1] ?? 16.7;
     frames.forEach((ms, i) => {
       const h = Math.max(1, (Math.min(ms, SCALE) / SCALE) * H);
-      ctx.fillStyle = ms > 33 ? "#e5604f" : ms > 17.5 ? "#e0b34a" : "#5fbf8f";
+      ctx.fillStyle = ms > 33 ? "#e5604f" : ms > vsync * 1.5 ? "#e0b34a" : "#5fbf8f";
       ctx.fillRect(W - (frames.length - i) * bw, H - h, Math.max(1, bw - 0.5), h);
     });
     // 60 fps budget.

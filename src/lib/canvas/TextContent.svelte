@@ -132,7 +132,7 @@
     display: none;
   }
   .card {
-    box-shadow: 0 calc(3px * var(--inv-zoom)) calc(14px * var(--inv-zoom)) var(--node-shadow);
+    box-shadow: 0 calc(3px * var(--shadow-zoom)) calc(14px * var(--shadow-zoom)) var(--node-shadow);
   }
 
   /* Auto-growing textarea: a hidden copy of the text sizes the shared grid cell. */
