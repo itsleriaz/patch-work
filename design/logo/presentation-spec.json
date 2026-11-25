@@ -1,0 +1,35 @@
+{
+  "brand": "Patchwork",
+  "tagline": "An infinite canvas for references and ideas",
+  "deck_title": "Final identity",
+  "brief": "A desktop canvas where references, notes, images, PDFs and sketches are pinned, linked and arranged. The mark should feel crafty, calm and personal, stay clear at 16 px, and avoid the sticky-note and bright-multicolour clichés of canvas tools.",
+  "adjectives": ["crafty", "calm", "personal", "organised mess"],
+  "criteria": "Success: reads as one shape at 16 px, works in one colour, owns the app's muted palette, distinct from overlapping-card icons.",
+  "industry": "consumer-app",
+  "mockups": ["app-icon", "website", "favicon-tab", "readme", "sticker", "social"],
+  "nav": ["Features", "Download", "Changelog"],
+  "brand_color": "#282c2f",
+  "tile_color": "#282c2f",
+  "greyscale": false,
+  "final": true,
+  "designer": "",
+  "round": 2,
+  "concepts": [
+    {
+      "name": "Log Cabin",
+      "symbol": "kit/patchwork-symbol-light.svg",
+      "lockup": "kit/patchwork-horizontal-light.svg",
+      "symbol_on_tile": "kit/patchwork-symbol-dark.svg",
+      "symbol_on_dark": "kit/patchwork-symbol-dark.svg",
+      "lockup_on_dark": "kit/patchwork-horizontal-dark.svg",
+      "idea": "Four patches turn around one odd piece: a quilt block that is also a canvas of cards.",
+      "rationale": [
+        "One pinwheel shape that holds up at 16 px and as an app tile",
+        "Each patch takes one of the app's own colours; the diamond is you",
+        "Built on one grid: 12-unit gaps, 12-unit radii, a 45° centre piece"
+      ]
+    }
+  ],
+  "recommendation": "Log Cabin in the app's palette: dark tile for the app icon, deeper tones on light backgrounds, one-colour ink for everything else.",
+  "next_steps": ["Swap the app and web icons in the repo", "Trademark search before public launch"]
+}
